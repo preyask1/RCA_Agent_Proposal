@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RCA Investigation Agent — Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  /* LIGHT (default) */
+  :root,[data-theme="light"]{
+    --bg:#F6F8FA;
+    --panel:#FFFFFF;
+    --card:#F0F2F5;
+    --border:#D0D7DE;
+    --border-strong:#A0AAB4;
+    --teal:#0E7B6E;
+    --teal-dim:#A5D8D3;
+    --teal-bg:#E6F4F2;
+    --text:#1A1F27;
+    --muted:#57606A;
+    --dim:#A0AAB4;
+    --red:#CF2121;
+    --amber:#8A5A00;
+    --green:#116329;
+    --coral:#B94A1A;
+    --tag-green-bg:#DCFCE7;--tag-green-txt:#116329;
+    --tag-amber-bg:#FEF3C7;--tag-amber-txt:#8A5A00;
+    --tag-coral-bg:#FFE4D6;--tag-coral-txt:#B94A1A;
+    --badge-old-bg:#FFDCDC;--badge-old-txt:#CF2121;
+    --badge-new-bg:#D4F4F1;--badge-new-txt:#0E7B6E;
+    --pill-bg:#DCFCE7;--pill-txt:#116329;
+    --risk-hi:#CF2121;--risk-med:#8A5A00;--risk-lo:#116329;
+    --never-icon:#CF2121;
+    --phase-bg:#E6F4F2;
+    --nav-bg:rgba(246,248,250,.95);
+    --shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+
+  /* DARK */
+  [data-theme="dark"]{
+    --bg:#0D1117;
+    --panel:#161B22;
+    --card:#1C2230;
+    --border:#21293A;
+    --border-strong:#3D4B5C;
+    --teal:#2DD4BF;
+    --teal-dim:#1A7A6E;
+    --teal-bg:#0D2926;
+    --text:#E6EDF3;
+    --muted:#8B949E;
+    --dim:#3D4B5C;
+    --red:#F85149;
+    --amber:#D29922;
+    --green:#3FB950;
+    --coral:#F0886A;
+    --tag-green-bg:rgba(63,185,80,.12);--tag-green-txt:#3FB950;
+    --tag-amber-bg:rgba(210,153,34,.12);--tag-amber-txt:#D29922;
+    --tag-coral-bg:rgba(240,136,106,.12);--tag-coral-txt:#F0886A;
+    --badge-old-bg:rgba(248,81,73,.12);--badge-old-txt:#F85149;
+    --badge-new-bg:rgba(45,212,191,.12);--badge-new-txt:#2DD4BF;
+    --pill-bg:rgba(63,185,80,.1);--pill-txt:#3FB950;
+    --risk-hi:#F85149;--risk-med:#D29922;--risk-lo:#3FB950;
+    --never-icon:#F85149;
+    --phase-bg:#161B22;
+    --nav-bg:rgba(13,17,23,.92);
+    --shadow:none;
+  }
+
+  html{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+  body{max-width:920px;margin:0 auto;padding:0 24px 80px}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:10px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  nav a{font-size:12px;font-weight:500;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:4px;transition:color .15s,background .15s}
+  nav a:hover{color:var(--teal);background:var(--teal-bg)}
+  .nav-spacer{flex:1}
+  .theme-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:500;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:4px;padding:4px 10px;transition:color .15s,background .15s}
+  .theme-toggle:hover{color:var(--teal)}
+  .theme-toggle svg{width:13px;height:13px;fill:currentColor}
+
+  /* HERO */
+  .hero{padding:60px 0 44px;border-bottom:1px solid var(--border)}
+  .hero-label{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--teal);margin-bottom:14px}
+  .hero h1{font-size:38px;font-weight:700;line-height:1.15;color:var(--text);margin-bottom:10px}
+  .hero-sub{font-size:16px;color:var(--muted);max-width:580px;line-height:1.6}
+  .hero-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;align-items:center}
+  .btn-primary{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#fff;background:var(--teal);border:none;border-radius:6px;padding:8px 16px;text-decoration:none;cursor:pointer;transition:opacity .15s}
+  .btn-primary:hover{opacity:.88}
+  .btn-outline{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--teal);background:transparent;border:1px solid var(--teal-dim);border-radius:6px;padding:8px 16px;text-decoration:none;cursor:pointer;transition:background .15s}
+  .btn-outline:hover{background:var(--teal-bg)}
+  .btn-outline svg,.btn-primary svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
+  .meta{display:flex;gap:24px;margin-top:20px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:16px}
+  .meta-item{font-size:12px;color:var(--muted)}
+  .meta-item span{color:var(--text);font-weight:500}
+
+  /* SECTIONS */
+  section{padding:48px 0;border-bottom:1px solid var(--border)}
+  section:last-child{border-bottom:none}
+  .sec-label{font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--teal);margin-bottom:8px}
+  h2{font-size:23px;font-weight:700;color:var(--text);margin-bottom:16px;line-height:1.25}
+  h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;margin-top:24px}
+  p{color:var(--muted);margin-bottom:12px;max-width:680px}
+
+  /* SUMMARY GRID */
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:20px}
+  .summary-card{background:var(--panel);padding:20px 18px;box-shadow:var(--shadow)}
+  .summary-card .label{font-size:11px;font-weight:600;color:var(--teal);margin-bottom:6px;letter-spacing:.06em}
+  .summary-card .val{font-size:13px;color:var(--text);line-height:1.55}
+
+  /* METRICS ROW */
+  .metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:20px}
+  .metric-card{background:var(--panel);padding:18px 16px}
+  .metric-card .mval{font-size:26px;font-weight:700;color:var(--teal);line-height:1}
+  .metric-card .mlabel{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4}
+
+  /* FEASIBILITY STRIP */
+  .feasibility-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
+  .fs-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:var(--shadow)}
+  .fs-card .fs-status{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--green);margin-bottom:6px}
+  .fs-card .fs-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+  .fs-card .fs-sub{font-size:12px;color:var(--muted);line-height:1.5}
+
+  /* ROADMAP */
+  .roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px}
+  .rm-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:var(--shadow);position:relative}
+  .rm-card .rm-phase{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--teal);margin-bottom:6px}
+  .rm-card .rm-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+  .rm-card .rm-items{font-size:11px;color:var(--muted);line-height:1.7}
+  .rm-card.future{border-style:dashed;opacity:.75}
+  .rm-card .rm-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--tag-coral-bg);color:var(--tag-coral-txt);margin-bottom:6px;letter-spacing:.04em}
+
+  /* DIFFERENCE TABLE */
+  .diff-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
+  .diff-table th{text-align:left;padding:10px 14px;background:var(--card);color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.06em}
+  .diff-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted)}
+  .diff-table td:first-child{color:var(--text);font-weight:500;white-space:nowrap}
+  .diff-table tr:last-child td{border-bottom:none}
+  .diff-table tr:nth-child(even) td{background:var(--card)}
+  .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;letter-spacing:.04em}
+  .badge-old{background:var(--badge-old-bg);color:var(--badge-old-txt)}
+  .badge-new{background:var(--badge-new-bg);color:var(--badge-new-txt)}
+
+  /* SYSTEM DIAGRAM */
+  .diagram-wrap{margin-top:24px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:28px 20px;overflow-x:auto;box-shadow:var(--shadow)}
+  .dg{display:flex;flex-direction:column;gap:14px;min-width:640px}
+  .dg-row{display:flex;gap:10px;align-items:stretch}
+  .dg-layer-label{font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.08em;min-width:90px;display:flex;align-items:center}
+  .dg-boxes{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+  .dg-box{flex:1;min-width:100px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+  .dg-box.teal{border-color:var(--teal-dim);background:var(--teal-bg)}
+  .dg-box.coral{border-color:rgba(185,74,26,.25);background:rgba(185,74,26,.05)}
+  .dg-box.purple{border-color:rgba(109,40,217,.2);background:rgba(109,40,217,.04)}
+  .dg-box.amber{border-color:rgba(138,90,0,.25);background:rgba(138,90,0,.05)}
+  .dg-box.green{border-color:rgba(17,99,41,.25);background:rgba(17,99,41,.05)}
+  [data-theme="dark"] .dg-box.coral{border-color:rgba(240,136,106,.3);background:rgba(240,136,106,.06)}
+  [data-theme="dark"] .dg-box.purple{border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.06)}
+  [data-theme="dark"] .dg-box.amber{border-color:rgba(210,153,34,.3);background:rgba(210,153,34,.06)}
+  [data-theme="dark"] .dg-box.green{border-color:rgba(63,185,80,.3);background:rgba(63,185,80,.06)}
+  .dg-box .bname{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
+  .dg-box .bsub{font-size:11px;color:var(--muted);line-height:1.4}
+  .dg-connector{display:flex;justify-content:center;align-items:center;color:var(--dim);font-size:18px}
+  .dg-divider{height:1px;background:var(--border);margin:2px 0}
+  .pipeline-strip{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;flex:1}
+  .ps-step{flex:1;padding:8px 10px;text-align:center;border-right:1px solid var(--border)}
+  .ps-step:last-child{border-right:none}
+  .ps-step .sn{font-size:10px;color:var(--dim);margin-bottom:2px}
+  .ps-step .st{font-weight:600;color:var(--text);font-size:11px}
+  .output-bar{background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:6px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex:1;gap:12px}
+  .output-bar .oname{font-size:13px;font-weight:600;color:var(--teal);white-space:nowrap}
+  .output-bar .osecs{display:flex;gap:6px;flex-wrap:wrap}
+  .output-bar .osec{font-size:10px;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:3px;padding:2px 7px}
+
+  /* CONNECTIONS TABLE */
+  .conn-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
+  .conn-table th{text-align:left;padding:10px 14px;background:var(--card);color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.06em}
+  .conn-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted);line-height:1.55}
+  .conn-table td:first-child{color:var(--teal);font-weight:600;white-space:nowrap}
+  .conn-table tr:last-child td{border-bottom:none}
+  .conn-table tr:nth-child(even) td{background:var(--card)}
+  .pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;background:var(--pill-bg);color:var(--pill-txt);margin-top:4px}
+
+  /* SECURITY TABLE */
+  .sec-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
+  .sec-table th{text-align:left;padding:10px 14px;background:var(--card);color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.06em}
+  .sec-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted)}
+  .sec-table td:first-child{color:var(--text);font-weight:500;font-family:monospace;font-size:12px;white-space:nowrap}
+  .sec-table tr:last-child td{border-bottom:none}
+  .sec-table tr:nth-child(even) td{background:var(--card)}
+
+  /* NEVER DOES */
+  .never-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+  .never-item{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:12px 14px;box-shadow:var(--shadow)}
+  .never-icon{font-size:13px;margin-top:2px;flex-shrink:0;color:var(--never-icon);font-weight:700}
+  .never-text{font-size:13px;color:var(--muted);line-height:1.5}
+
+  /* SKILL TABLE */
+  .skill-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
+  .skill-table th{text-align:left;padding:9px 12px;background:var(--card);color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.06em}
+  .skill-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted);line-height:1.5}
+  .skill-table td:first-child{color:var(--text);font-weight:500}
+  .skill-table tr:last-child td{border-bottom:none}
+  .phase-header td{background:var(--phase-bg)!important;padding:8px 12px;font-size:11px;font-weight:700;color:var(--teal);letter-spacing:.08em;border-bottom:1px solid var(--border)}
+  .tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;letter-spacing:.03em}
+  .tag-green{background:var(--tag-green-bg);color:var(--tag-green-txt)}
+  .tag-amber{background:var(--tag-amber-bg);color:var(--tag-amber-txt)}
+  .tag-coral{background:var(--tag-coral-bg);color:var(--tag-coral-txt)}
+
+  /* RISK TABLE */
+  .risk-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
+  .risk-table th{text-align:left;padding:10px 14px;background:var(--card);color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.06em}
+  .risk-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted);line-height:1.5}
+  .risk-table td:first-child{color:var(--text);font-weight:500}
+  .risk-table tr:last-child td{border-bottom:none}
+  .risk-table tr:nth-child(even) td{background:var(--card)}
+  .risk-hi{color:var(--risk-hi);font-weight:600}
+  .risk-med{color:var(--risk-med);font-weight:600}
+  .risk-lo{color:var(--risk-lo);font-weight:600}
+
+  /* NEXT STEPS */
+  .steps-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+  .step-item{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;box-shadow:var(--shadow)}
+  .step-num{font-size:12px;font-weight:700;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-dim);border-radius:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+  .step-text{font-size:13px;color:var(--muted);line-height:1.5}
+
+  /* FOOTER */
+  footer{padding:32px 0 0;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;gap:12px;margin-top:48px}
+  .footer-left{font-size:12px;color:var(--dim)}
+  .footer-right{font-size:12px;color:var(--dim)}
+
+  @media(max-width:640px){
+    .summary-grid,.metrics-row{grid-template-columns:1fr}
+    .feasibility-strip,.roadmap{grid-template-columns:1fr}
+    .never-grid,.steps-grid{grid-template-columns:1fr}
+    .hero h1{font-size:28px}
+    .dg-layer-label{min-width:60px;font-size:9px}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#summary">Summary</a>
+  <a href="#feasibility">Feasibility</a>
+  <a href="#design">System design</a>
+  <a href="#difference">What's different</a>
+  <a href="#connections">Connections</a>
+  <a href="#identity">Identity</a>
+  <a href="#never">Guardrails</a>
+  <a href="#build">Build plan</a>
+  <a href="#risks">Risks</a>
+  <a href="#next">Next steps</a>
+  <div class="nav-spacer"></div>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <svg id="theme-icon" viewBox="0 0 20 20"><path id="theme-path" d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
+    <span id="theme-label">Dark</span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Proposal · Mankind Pharma · DP Project</div>
+  <h1>RCA Investigation Agent</h1>
+  <p class="hero-sub">A Foundry-hosted AI agent that investigates data issues across four platforms, traces root causes end-to-end, and delivers a structured finding to Jira — without touching production.</p>
+  <div class="hero-actions">
+    <a href="rca-agent-full-spec.md" class="btn-primary">
+      <svg viewBox="0 0 20 20"><path d="M4 4h8l4 4v8a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm8 0v4h4"/></svg>
+      Full agent spec (coming soon)
+    </a>
+    <a href="#next" class="btn-outline">
+      <svg viewBox="0 0 20 20"><path d="M10 3v14M3 10l7 7 7-7"/></svg>
+      Jump to next steps
+    </a>
+  </div>
+  <div class="meta">
+    <div class="meta-item">Prepared by <span>Preyas Kulshreshtha, SDM</span></div>
+    <div class="meta-item">Organisation <span>Celebal Technologies</span></div>
+    <div class="meta-item">Date <span>August 2026</span></div>
+    <div class="meta-item">Version <span>v0.1 — draft for leadership review</span></div>
+  </div>
+</div>
+
+<!-- 1. SUMMARY -->
+<section id="summary">
+  <div class="sec-label">01</div>
+  <h2>What this is about</h2>
+  <p>Every data issue today — a Power BI discrepancy, a Pulse mismatch, a Databricks pipeline failure, an ADF ingestion error — requires a senior engineer to manually trace evidence across four disconnected systems. That takes 3–6 hours per incident. This agent automates the entire investigation, produces a structured RCA report, and waits for a human to confirm before posting anything to Jira.</p>
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">Problem</div>
+      <div class="val">Manual cross-system investigation consuming 3–6 hrs of senior engineer time per incident, with no consistent RCA format</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Solution</div>
+      <div class="val">Foundry-hosted agent: triggered by a Jira ticket, investigates all four data planes, posts a structured RCA report</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Constraint</div>
+      <div class="val">Read-only across all systems. One gated write: the Jira comment, posted only after human review and confirmation</div>
+    </div>
+  </div>
+  <div class="metrics-row" style="margin-top:8px">
+    <div class="metric-card">
+      <div class="mval">&lt;30 min</div>
+      <div class="mlabel">Target time to root cause (down from 3–6 hrs)</div>
+    </div>
+    <div class="metric-card">
+      <div class="mval">&gt;90%</div>
+      <div class="mlabel">DP tickets with structured RCA after Phase 2</div>
+    </div>
+    <div class="metric-card">
+      <div class="mval">4</div>
+      <div class="mlabel">Data planes covered: PBI, Pulse, Databricks, ADF</div>
+    </div>
+    <div class="metric-card">
+      <div class="mval">&lt;15%</div>
+      <div class="mlabel">Target recurring root cause rate within 90 days</div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. FEASIBILITY -->
+<section id="feasibility">
+  <div class="sec-label">02</div>
+  <h2>Is this feasible on Foundry?</h2>
+  <p>Yes — and the timing is good. Claude reached general availability in Microsoft Foundry in June 2026. Hosted agents went GA in July 2026. The MCP connector for Claude on Azure shipped in August 2026. Everything this agent needs is live now, not on a roadmap.</p>
+  <div class="feasibility-strip">
+    <div class="fs-card">
+      <div class="fs-status">GA · June 2026</div>
+      <div class="fs-title">Claude on Azure</div>
+      <div class="fs-sub">Anthropic models hosted on Azure with Entra ID auth, Azure billing, and the Messages API. Prompts stay within Azure perimeter.</div>
+    </div>
+    <div class="fs-card">
+      <div class="fs-status">GA · July 2026</div>
+      <div class="fs-title">Hosted agents</div>
+      <div class="fs-sub">Bring your own code and framework. Foundry runs it as a container with managed endpoint, scaling, session state, and observability.</div>
+    </div>
+    <div class="fs-card">
+      <div class="fs-status">Live · August 2026</div>
+      <div class="fs-title">MCP connector + tool search</div>
+      <div class="fs-sub">Structured outputs, web search, web fetch, and MCP connector now available for Claude on Azure-hosted deployments.</div>
+    </div>
+  </div>
+  <h3>One known limitation</h3>
+  <p>Computer use and browser toolsets are not available on Azure-hosted Claude deployments. This is not a blocker — the agent is designed to use log-based evidence, not browser screenshots. If browser automation is ever needed, it would route through the "Hosted on Anthropic" option instead.</p>
+  <h3>What about Graph databases and RAG in the future?</h3>
+  <p>Both are natural extensions of this agent and are fully supported in the Azure ecosystem. The agent as designed today is a live-query agent — it hits Databricks, Fabric, and ADO in real time. Once 3–6 months of confirmed RCA cases accumulate, the architecture can be extended:</p>
+  <div class="roadmap" style="margin-top:16px">
+    <div class="rm-card">
+      <div class="rm-phase">Phase 1–3</div>
+      <div class="rm-title">Live-query agent</div>
+      <div class="rm-items">Hits Databricks, Fabric, ADO in real time for every investigation. Builds the case library.</div>
+    </div>
+    <div class="rm-card future">
+      <div class="rm-badge">Phase 4</div>
+      <div class="rm-phase">RAG on case library</div>
+      <div class="rm-title">Retrieval before investigation</div>
+      <div class="rm-items">Before querying Databricks, retrieves top 3 similar past cases. Known root causes resolved in under 1 minute.</div>
+    </div>
+    <div class="rm-card future">
+      <div class="rm-badge">Phase 4</div>
+      <div class="rm-phase">Graph database</div>
+      <div class="rm-title">Lineage as a graph</div>
+      <div class="rm-items">Build a knowledge graph of tables, measures, notebooks, and pipelines. Lineage trace becomes a single graph query — no live SQL needed.</div>
+    </div>
+    <div class="rm-card future">
+      <div class="rm-badge">Phase 5</div>
+      <div class="rm-phase">GraphRAG</div>
+      <div class="rm-title">Cheaper + faster</div>
+      <div class="rm-items">LazyGraphRAG reduces indexing cost to 0.1% of full GraphRAG. Multi-hop queries across Jira tickets, RCA reports, and ADO history.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. SYSTEM DESIGN -->
+<section id="design">
+  <div class="sec-label">03</div>
+  <h2>System design</h2>
+  <p>Hosted on Microsoft Foundry as a Linux container. Triggered by a Jira webhook, routed to the right investigation persona, runs a five-stage pipeline, and outputs a structured RCA report pending human confirmation.</p>
+  <div class="diagram-wrap">
+    <div class="dg">
+      <div class="dg-row">
+        <div class="dg-layer-label">Triggers</div>
+        <div class="dg-boxes">
+          <div class="dg-box"><div class="bname">Jira webhook</div><div class="bsub">New DP ticket → auto-triage</div></div>
+          <div class="dg-box"><div class="bname">Manual prompt</div><div class="bsub">HTTP or CLI trigger</div></div>
+          <div class="dg-box"><div class="bname">Scheduled sweep</div><div class="bsub">Nightly backlog scan</div></div>
+        </div>
+      </div>
+      <div class="dg-connector">↓</div>
+      <div class="dg-row">
+        <div class="dg-layer-label">Router</div>
+        <div class="dg-boxes">
+          <div class="dg-box teal" style="flex:none;width:100%">
+            <div class="bname">Intake router</div>
+            <div class="bsub">Reads ticket · classifies plane · dispatches the right persona(s)</div>
+          </div>
+        </div>
+      </div>
+      <div class="dg-connector">↓</div>
+      <div class="dg-row">
+        <div class="dg-layer-label">Personas</div>
+        <div class="dg-boxes">
+          <div class="dg-box teal"><div class="bname">PBI-Investigation</div><div class="bsub">Power BI / Fabric · XMLA + REST</div></div>
+          <div class="dg-box teal"><div class="bname">Pulse-Investigation</div><div class="bsub">Superman Portal · gold trace</div></div>
+          <div class="dg-box coral"><div class="bname">DBX-Investigation</div><div class="bsub">Databricks UC · job history</div></div>
+          <div class="dg-box coral"><div class="bname">ADF-Investigation</div><div class="bsub">Pipeline runs · activity logs</div></div>
+        </div>
+      </div>
+      <div class="dg-connector">↓</div>
+      <div class="dg-row">
+        <div class="dg-layer-label">Pipeline</div>
+        <div class="pipeline-strip">
+          <div class="ps-step"><div class="sn">01</div><div class="st">Symptom capture</div></div>
+          <div class="ps-step"><div class="sn">02</div><div class="st">Data pull</div></div>
+          <div class="ps-step"><div class="sn">03</div><div class="st">Lineage trace</div></div>
+          <div class="ps-step"><div class="sn">04</div><div class="st">Root cause</div></div>
+          <div class="ps-step"><div class="sn">05</div><div class="st">Fix rec.</div></div>
+        </div>
+      </div>
+      <div class="dg-connector">↓</div>
+      <div class="dg-row">
+        <div class="dg-layer-label">Output</div>
+        <div class="output-bar">
+          <div class="oname">Structured RCA report</div>
+          <div class="osecs">
+            <span class="osec">Summary</span>
+            <span class="osec">Timeline</span>
+            <span class="osec">Evidence</span>
+            <span class="osec">Root cause</span>
+            <span class="osec">Impact</span>
+            <span class="osec">Recommendation</span>
+          </div>
+        </div>
+      </div>
+      <div class="dg-connector">↓</div>
+      <div class="dg-row">
+        <div class="dg-layer-label">Human gate</div>
+        <div class="dg-boxes">
+          <div class="dg-box amber" style="flex:none;width:100%">
+            <div class="bname">Human reviews RCA → confirms → Jira comment posted</div>
+            <div class="bsub">Only write action in the entire system. Not automated. Exposed via front end (Teams bot / web app).</div>
+          </div>
+        </div>
+      </div>
+      <div class="dg-divider"></div>
+      <div class="dg-row">
+        <div class="dg-layer-label">Front end</div>
+        <div class="dg-boxes">
+          <div class="dg-box purple"><div class="bname">Teams bot</div><div class="bsub">Lowest friction — confirm via chat button</div></div>
+          <div class="dg-box purple"><div class="bname">Web app</div><div class="bsub">Full investigation history + dashboard</div></div>
+          <div class="dg-box purple"><div class="bname">Jira button</div><div class="bsub">Forge app — "Investigate" on DP tickets</div></div>
+        </div>
+      </div>
+      <div class="dg-divider"></div>
+      <div class="dg-row">
+        <div class="dg-layer-label">Data plane</div>
+        <div class="dg-boxes">
+          <div class="dg-box purple"><div class="bname">Power BI / Fabric</div><div class="bsub">3 workspaces · XMLA + REST</div></div>
+          <div class="dg-box purple"><div class="bname">Databricks UC</div><div class="bsub">mnk_prod · gold + pulse</div></div>
+          <div class="dg-box purple"><div class="bname">ADO repos ×3</div><div class="bsub">Read-only · cloned at startup</div></div>
+          <div class="dg-box purple"><div class="bname">ADF</div><div class="bsub">Pipeline run API</div></div>
+          <div class="dg-box purple"><div class="bname">Jira (DP)</div><div class="bsub">REST · 1 gated write</div></div>
+          <div class="dg-box purple"><div class="bname">Azure SQL</div><div class="bsub">mnkDnAIdb · Pulse serving DB</div></div>
+        </div>
+      </div>
+      <div class="dg-divider"></div>
+      <div class="dg-row">
+        <div class="dg-layer-label">Identity</div>
+        <div class="dg-boxes">
+          <div class="dg-box green"><div class="bname">Azure Key Vault</div><div class="bsub">All secrets injected at startup · nothing in any repo or image</div></div>
+          <div class="dg-box green"><div class="bname">SP-B</div><div class="bsub">Fabric · Databricks · ADF · Azure SQL</div></div>
+          <div class="dg-box green"><div class="bname">SP-C</div><div class="bsub">Jira bot account · DP scope only</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. WHAT'S DIFFERENT -->
+<section id="difference">
+  <div class="sec-label">04</div>
+  <h2>How this differs from the current support agent</h2>
+  <p>The existing agent covers Power BI and Pulse only, produces a verdict and a draft reply, and requires an engineer's laptop to run. This agent covers all four data planes, runs unattended on a server, and produces a formal RCA document.</p>
+  <table class="diff-table">
+    <thead><tr><th>Dimension</th><th>Current</th><th>This agent</th></tr></thead>
+    <tbody>
+      <tr><td>Planes covered</td><td><span class="badge badge-old">PBI + Pulse only</span></td><td><span class="badge badge-new">PBI · Pulse · Databricks · ADF</span></td></tr>
+      <tr><td>Output</td><td>Verdict + draft Jira reply</td><td>Structured 6-section RCA with confidence score</td></tr>
+      <tr><td>Hosting</td><td>Engineer's laptop — Windows, interactive</td><td>Microsoft Foundry — Linux container, unattended 24/7</td></tr>
+      <tr><td>Authentication</td><td>Per-user browser logins · stops on token expiry</td><td>Service principals · Key Vault · always running</td></tr>
+      <tr><td>Power BI access</td><td>VS Code Windows extension (MCP)</td><td>Fabric REST + XMLA — no extension dependency</td></tr>
+      <tr><td>Investigation depth</td><td>Report → DAX → model → gold</td><td>Symptom → data pull → lineage → root cause → fix rec.</td></tr>
+      <tr><td>Front end</td><td>None — terminal only</td><td>Teams bot · web app · Jira embedded button</td></tr>
+      <tr><td>Learning loop</td><td>Manual retro, human-confirmed cases</td><td>Persistent case library on git-backed volume, auto-filed</td></tr>
+      <tr><td>Screenshots / browser</td><td>Playwright (named-user PII risk)</td><td>Not included — log-based evidence only</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 5. CONNECTIONS -->
+<section id="connections">
+  <div class="sec-label">05</div>
+  <h2>How it connects to each system</h2>
+  <table class="conn-table">
+    <thead><tr><th>System</th><th>What it reads</th><th>How it connects</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>ADO repos ×3</td>
+        <td>Report/model TMDL files, ETL notebooks, ADF pipeline definitions — for lineage context only</td>
+        <td>Read-only deploy key (PAT). Repos cloned at container startup. No push permission.<br/><span class="pill">read-only</span></td>
+      </tr>
+      <tr>
+        <td>Databricks UC</td>
+        <td>Job run history, cluster event logs, task failure reasons, gold and pulse table snapshots</td>
+        <td>Databricks SDK · OAuth M2M (client credentials). UC grants: SELECT on mnk_prod.gold.* and pulse.* only.<br/><span class="pill">SELECT only</span></td>
+      </tr>
+      <tr>
+        <td>Power BI / Fabric</td>
+        <td>Refresh history, measure definitions, RLS roles, model tables, DAX query results</td>
+        <td>AAD service principal · Fabric REST + XMLA endpoint. SP role: Workspace Viewer on 3 workspaces.<br/><span class="pill">viewer role</span></td>
+      </tr>
+      <tr>
+        <td>ADF</td>
+        <td>Pipeline run history, activity-level failure details, trigger state, linked service names</td>
+        <td>Azure REST API (management.azure.com). SP-B with Reader role on the ADF resource.<br/><span class="pill">reader role</span></td>
+      </tr>
+      <tr>
+        <td>Azure SQL (mnkDnAIdb)</td>
+        <td>Pulse app serving DB — queried for data validation during Pulse investigations</td>
+        <td>SP-B with db_datareader role on mnkdnaisql.database.windows.net. SELECT only.<br/><span class="pill">SELECT only</span></td>
+      </tr>
+      <tr>
+        <td>Jira (DP project)</td>
+        <td>Ticket detail, JQL search, attachments. One write: the confirmed RCA comment.</td>
+        <td>REST API with bot account API token (Basic Auth). Scoped to DP project only.<br/><span class="pill">DP scoped</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 6. IDENTITY & SECURITY -->
+<section id="identity">
+  <div class="sec-label">06</div>
+  <h2>Identity and security model</h2>
+  <p>Two service principals. One Key Vault. No credentials in any repo, image layer, or config file. Databricks access is enforced at the platform level (UC grants), not just by agent instruction.</p>
+  <table class="sec-table">
+    <thead><tr><th>Secret</th><th>Used for</th><th>Stored in</th></tr></thead>
+    <tbody>
+      <tr><td>ANTHROPIC_API_KEY</td><td>Claude runtime on Foundry</td><td>Azure Key Vault</td></tr>
+      <tr><td>DBX_CLIENT_ID / SECRET</td><td>Databricks SDK · OAuth M2M (SP-B)</td><td>Azure Key Vault</td></tr>
+      <tr><td>AAD_TENANT_ID / PBI_CLIENT_ID / SECRET</td><td>Fabric XMLA + REST · ADF REST (SP-B)</td><td>Azure Key Vault</td></tr>
+      <tr><td>JIRA_EMAIL / JIRA_API_TOKEN</td><td>Jira REST — bot account (SP-C), DP project only</td><td>Azure Key Vault</td></tr>
+      <tr><td>SQL_CONNECTION_STRING</td><td>Azure SQL (mnkDnAIdb) — Pulse validation (SP-B)</td><td>Azure Key Vault</td></tr>
+      <tr><td>ADO_DEPLOY_KEY</td><td>Repo checkout at startup — read-only, no push</td><td>Azure Key Vault</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 7. GUARDRAILS -->
+<section id="never">
+  <div class="sec-label">07</div>
+  <h2>What the agent never does</h2>
+  <p>Enforced by UC grants, SP role assignments, and the agent's permission allow-list — not just by instruction.</p>
+  <div class="never-grid">
+    <div class="never-item"><div class="never-icon">✕</div><div class="never-text">Write, commit, or push to any ADO repo</div></div>
+    <div class="never-item"><div class="never-icon">✕</div><div class="never-text">Modify any Databricks table, schema, job, or cluster</div></div>
+    <div class="never-item"><div class="never-icon">✕</div><div class="never-text">Publish a Power BI model or trigger a dataset refresh</div></div>
+    <div class="never-item"><div class="never-icon">✕</div><div class="never-text">Trigger an ADF pipeline run or modify a linked service</div></div>
+    <div class="never-item"><div class="never-icon">✕</div><div class="never-text">Post to Jira without a human reviewing and confirming first</div></div>
+    <div class="never-item"><div class="never-icon">✕</div><div class="never-text">Use browser automation or reproduce named-user screenshots</div></div>
+    <div class="never-item"><div class="never-icon">✕</div><div class="never-text">Store any credential in a repo, image, or committed config file</div></div>
+    <div class="never-item"><div class="never-icon">✕</div><div class="never-text">Run INSERT, UPDATE, DELETE, DROP, or MERGE on any database</div></div>
+  </div>
+</section>
+
+<!-- 8. BUILD PLAN -->
+<section id="build">
+  <div class="sec-label">08</div>
+  <h2>Build plan and skill inventory</h2>
+  <p>Three phases. Existing skills reused wherever possible — 8 carry over directly, 9 need rework, 7 are net-new. Phase 1 is a prerequisite for everything else.</p>
+  <table class="skill-table" style="margin-top:20px">
+    <thead><tr><th>Skill / asset</th><th>Status</th><th>What changes</th><th>Est. effort</th></tr></thead>
+    <tbody>
+      <tr class="phase-header"><td colspan="4">Phase 1 — Auth and infrastructure · ~2 weeks · prerequisite for everything</td></tr>
+      <tr><td>Service principals (SP-B, SP-C)</td><td><span class="tag tag-coral">New</span></td><td>Provision in AAD; configure Key Vault</td><td>2 days</td></tr>
+      <tr><td>settings.json guardrails</td><td><span class="tag tag-amber">Rework</span></td><td>Rewrite from scratch — current path globs are inert</td><td>1 day</td></tr>
+      <tr><td>databricks-query (dbx_query.py)</td><td><span class="tag tag-amber">Rework</span></td><td>Switch from az-cli auth to OAuth M2M env vars</td><td>1 day</td></tr>
+      <tr><td>Jira REST path</td><td><span class="tag tag-amber">Rework</span></td><td>Replace browser OAuth with bot API token</td><td>1 day</td></tr>
+      <tr><td>ADO deploy key + repo checkout</td><td><span class="tag tag-coral">New</span></td><td>Read-only PAT for 3 repos; wired at container startup</td><td>1 day</td></tr>
+
+      <tr class="phase-header"><td colspan="4">Phase 2 — PBI and Pulse · ~4 weeks · highest value, most existing material</td></tr>
+      <tr><td>lineage-trace</td><td><span class="tag tag-green">Carries over</span></td><td>Use as-is</td><td>—</td></tr>
+      <tr><td>gold-lineage</td><td><span class="tag tag-green">Carries over</span></td><td>Use as-is</td><td>—</td></tr>
+      <tr><td>jira-intake</td><td><span class="tag tag-green">Carries over</span></td><td>Ticket reading logic intact</td><td>—</td></tr>
+      <tr><td>jira_attachment.py</td><td><span class="tag tag-green">Carries over</span></td><td>Point to bot account env vars</td><td>0.5 days</td></tr>
+      <tr><td>pbi-troubleshoot</td><td><span class="tag tag-amber">Rework</span></td><td>Add Fabric REST + XMLA path; remove VS Code MCP calls</td><td>3 days</td></tr>
+      <tr><td>pbi-support → PBI-Investigation</td><td><span class="tag tag-amber">Rework</span></td><td>Restructure to five-stage pipeline + RCA report output</td><td>5 days</td></tr>
+      <tr><td>pulse-investigation</td><td><span class="tag tag-coral">New</span></td><td>Full pipeline + cross-layer trace including Azure SQL</td><td>5 days</td></tr>
+      <tr><td>intake-router (2-plane)</td><td><span class="tag tag-coral">New</span></td><td>Classify ticket to PBI or Pulse; dispatch persona</td><td>2 days</td></tr>
+      <tr><td>rca-report-writer</td><td><span class="tag tag-coral">New</span></td><td>Produces the structured six-section RCA document</td><td>3 days</td></tr>
+      <tr><td>Case library (rca-cases/)</td><td><span class="tag tag-amber">Rework</span></td><td>Rename, extend schema, mount on persistent volume</td><td>1 day</td></tr>
+
+      <tr class="phase-header"><td colspan="4">Phase 3 — Databricks and ADF · ~3 weeks · new planes</td></tr>
+      <tr><td>dbx-investigation</td><td><span class="tag tag-coral">New</span></td><td>UC job run history, cluster logs, task failures, table snapshots</td><td>5 days</td></tr>
+      <tr><td>adf-investigation</td><td><span class="tag tag-coral">New</span></td><td>ADF pipeline run history, activity failures, trigger state</td><td>4 days</td></tr>
+      <tr><td>adf-run-reader</td><td><span class="tag tag-coral">New</span></td><td>Wrapper normalising ADF REST output into RCA evidence format</td><td>2 days</td></tr>
+      <tr><td>confidence-scorer</td><td><span class="tag tag-coral">New</span></td><td>Classifies root cause type; assigns confidence score</td><td>2 days</td></tr>
+      <tr><td>intake-router (4-plane)</td><td><span class="tag tag-amber">Rework</span></td><td>Extend to include DBX and ADF planes</td><td>1 day</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 9. RISKS -->
+<section id="risks">
+  <div class="sec-label">09</div>
+  <h2>Risks and mitigations</h2>
+  <table class="risk-table">
+    <thead><tr><th>Risk</th><th>Likelihood</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Fabric SP API access disabled by tenant policy</td>
+        <td><span class="risk-med">Medium</span></td>
+        <td>Validate "Service principals can use Fabric APIs" in Phase 1 — blocks Phase 2 if unresolved</td>
+      </tr>
+      <tr>
+        <td>Databricks UC grants not tightened before go-live</td>
+        <td><span class="risk-med">Medium</span></td>
+        <td>Enforce SELECT only on gold.* and pulse.* before Phase 2; remove prompt-level constraint</td>
+      </tr>
+      <tr>
+        <td>Azure SQL access not provisioned for Pulse persona</td>
+        <td><span class="risk-med">Medium</span></td>
+        <td>Confirm SP-B db_datareader role on mnkDnAIdb in Phase 1; Pulse-Investigation depends on it</td>
+      </tr>
+      <tr>
+        <td>Container restart loses rca-cases/ history</td>
+        <td><span class="risk-lo">Low</span></td>
+        <td>Persistent volume mounted; cases committed to git branch after each investigation</td>
+      </tr>
+      <tr>
+        <td>ADF REST scope blocked by subscription policy</td>
+        <td><span class="risk-lo">Low</span></td>
+        <td>Validate SP-B Reader role on ADF resource in Phase 1 — well before Phase 3 starts</td>
+      </tr>
+      <tr>
+        <td>Human confirm step bypassed under time pressure</td>
+        <td><span class="risk-med">Medium</span></td>
+        <td>Gate enforced in code — Jira write is not in the agent's allow-list; only exposed via front end confirm action</td>
+      </tr>
+      <tr>
+        <td>Jira bot lacks DP project permissions</td>
+        <td><span class="risk-lo">Low</span></td>
+        <td>Create bot and confirm DP read + comment access in Phase 1 before Phase 2 starts</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 10. NEXT STEPS -->
+<section id="next">
+  <div class="sec-label">10</div>
+  <h2>Next steps after approval</h2>
+  <p>Eight actions to kick off Phase 1. All of these can run in parallel once leadership approves.</p>
+  <div class="steps-grid">
+    <div class="step-item"><div class="step-num">1</div><div class="step-text">Provision SP-B and SP-C in AAD; configure Azure Key Vault with all secrets</div></div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-text">Create Jira bot account and confirm read + comment permissions on DP project</div></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-text">Enable "Service principals can use Fabric APIs" in Mankind Pharma tenant settings</div></div>
+    <div class="step-item"><div class="step-num">4</div><div class="step-text">Set UC grants: SELECT on mnk_prod.gold.* and mnk_prod.pulse.* for SP-B</div></div>
+    <div class="step-item"><div class="step-num">5</div><div class="step-text">Assign Workspace Viewer role to SP-B on the three Fabric workspaces</div></div>
+    <div class="step-item"><div class="step-num">6</div><div class="step-text">Grant SP-B db_datareader on mnkDnAIdb (Azure SQL) for Pulse validation queries</div></div>
+    <div class="step-item"><div class="step-num">7</div><div class="step-text">Kick off Phase 1 build: auth infrastructure, settings.json rewrite, path de-hardcoding</div></div>
+    <div class="step-item"><div class="step-num">8</div><div class="step-text">Smoke test Phase 2 against confirmed closed DP tickets before any go-live</div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">Celebal Technologies · Mankind Pharma (DP) · v0.1 draft</div>
+  <div class="footer-right">Prepared by Preyas Kulshreshtha, SDM · August 2026</div>
+</footer>
+
+<script>
+  function toggleTheme(){
+    const html=document.documentElement;
+    const isDark=html.getAttribute('data-theme')==='dark';
+    html.setAttribute('data-theme',isDark?'light':'dark');
+    document.getElementById('theme-label').textContent=isDark?'Dark':'Light';
+    updateIcon(!isDark);
+  }
+  function updateIcon(dark){
+    const p=document.getElementById('theme-path');
+    if(dark){
+      p.setAttribute('d','M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z');
+    } else {
+      p.setAttribute('d','M10 3V1m0 18v-2M3 10H1m18 0h-2M4.93 4.93L3.51 3.51m12.02 12.02l-1.42-1.42M4.93 15.07l-1.42 1.42M16.95 3.51l-1.42 1.42M10 6a4 4 0 100 8 4 4 0 000-8z');
+    }
+  }
+  updateIcon(false);
+</script>
+</body>
+</html>
